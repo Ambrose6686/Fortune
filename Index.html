@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>八字每日運勢</title>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#120800;--gold:#c9933a;--gold-light:#e8c06a;--paper-dark:#ddc99a;--smoke:#8a7a65;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--ink);min-height:100vh;display:flex;flex-direction:column;align-items:center;font-family:'Noto Serif TC',serif;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 15%,rgba(201,147,58,0.1) 0%,transparent 55%),radial-gradient(ellipse at 85% 85%,rgba(181,41,42,0.07) 0%,transparent 55%);pointer-events:none;}
+  .container{width:100%;max-width:460px;padding:0 0 50px;}
+  .header{text-align:center;padding:40px 20px 16px;}
+  .header-deco{font-family:'Ma Shan Zheng',cursive;font-size:0.7rem;color:var(--smoke);letter-spacing:0.5em;margin-bottom:6px;}
+  .title-main{font-family:'Ma Shan Zheng',cursive;font-size:2.4rem;color:var(--gold);letter-spacing:0.25em;text-shadow:0 0 40px rgba(201,147,58,0.5);}
+  .divider{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto;}
+  .input-section{margin:0 18px 20px;background:rgba(201,147,58,0.05);border:1px solid rgba(201,147,58,0.2);border-radius:6px;padding:20px;}
+  .input-title{font-size:0.75rem;color:var(--gold);letter-spacing:0.2em;margin-bottom:8px;text-align:center;}
+  .input-hint{font-size:0.62rem;color:var(--smoke);text-align:center;margin-bottom:14px;}
+  .input-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;}
+  .input-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .input-group{display:flex;flex-direction:column;gap:5px;}
+  .input-label{font-size:0.6rem;color:var(--smoke);letter-spacing:0.15em;}
+  .input-field{background:rgba(201,147,58,0.07);border:1px solid rgba(201,147,58,0.2);border-radius:3px;color:var(--paper-dark);font-family:'Noto Serif TC',serif;font-size:0.85rem;padding:8px 10px;outline:none;width:100%;-webkit-appearance:none;}
+  .input-field option{background:#1a0f00;}
+  .calc-btn{width:100%;margin-top:14px;background:linear-gradient(135deg,rgba(201,147,58,0.25),rgba(201,147,58,0.1));border:1px solid rgba(201,147,58,0.4);border-radius:4px;color:var(--gold-light);font-family:'Ma Shan Zheng',cursive;font-size:1.1rem;letter-spacing:0.3em;padding:12px;cursor:pointer;transition:all 0.3s;}
+  .calc-btn:hover{background:linear-gradient(135deg,rgba(201,147,58,0.4),rgba(201,147,58,0.2));}
+  .calc-btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .date-bar{margin:0 18px 14px;background:rgba(201,147,58,0.07);border:1px solid rgba(201,147,58,0.22);border-radius:4px;padding:13px 18px;display:flex;justify-content:space-between;align-items:center;}
+  .date-solar{color:var(--gold-light);font-size:0.95rem;}
+  .date-right{text-align:right;}
+  .date-lunar{color:var(--paper-dark);font-size:0.75rem;line-height:1.7;}
+  .date-ganzhi{color:var(--gold);font-size:0.72rem;}
+  .birth-info-bar{margin:0 18px 14px;background:rgba(181,41,42,0.05);border:1px solid rgba(181,41,42,0.2);border-radius:4px;padding:10px 16px;font-size:0.72rem;color:var(--smoke);line-height:1.9;}
+  .birth-info-bar span{color:var(--gold-light);}
+  .bazi-strip{margin:0 18px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .bazi-pill{background:rgba(201,147,58,0.06);border:1px solid rgba(201,147,58,0.2);border-radius:3px;text-align:center;padding:9px 4px;}
+  .bazi-label{font-size:0.55rem;color:var(--smoke);letter-spacing:0.15em;display:block;margin-bottom:3px;}
+  .bazi-chars{font-family:'Ma Shan Zheng',cursive;font-size:1.15rem;color:var(--gold);}
+  .bazi-today{border-color:rgba(181,41,42,0.4);background:rgba(181,41,42,0.07);}
+  .bazi-today .bazi-chars{color:#e06060;}
+  .overall-bar{margin:0 18px 14px;background:rgba(201,147,58,0.06);border:1px solid rgba(201,147,58,0.18);border-radius:4px;padding:14px 18px;display:flex;align-items:center;gap:14px;}
+  .overall-label{font-size:0.72rem;color:var(--smoke);letter-spacing:0.2em;white-space:nowrap;}
+  .meter{flex:1;height:6px;background:rgba(201,147,58,0.12);border-radius:3px;overflow:hidden;}
+  .meter-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width 1.2s ease;}
+  .overall-score{font-family:'Ma Shan Zheng',cursive;font-size:1.3rem;color:var(--gold);white-space:nowrap;}
+  .card{margin:0 18px 14px;background:rgba(245,234,214,0.03);border:1px solid rgba(201,147,58,0.16);border-radius:4px;overflow:hidden;animation:fadeUp 0.55s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .card-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(201,147,58,0.1);background:rgba(201,147,58,0.045);}
+  .card-icon{font-size:1rem;}.card-title{font-size:0.75rem;color:var(--gold);letter-spacing:0.2em;}
+  .stars{margin-left:auto;font-size:0.8rem;}.s-on{color:var(--gold)}.s-off{color:rgba(201,147,58,0.22)}
+  .card-body{padding:14px 16px;}
+  .fortune-text{color:var(--paper-dark);font-size:0.82rem;line-height:2;letter-spacing:0.03em;}
+  .lucky-card{margin:0 18px 14px;border:1px solid rgba(181,41,42,0.35);background:linear-gradient(135deg,rgba(181,41,42,0.1),rgba(181,41,42,0.03));border-radius:4px;overflow:hidden;}
+  .lucky-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid rgba(181,41,42,0.2);background:rgba(181,41,42,0.08);}
+  .lucky-title{font-size:0.75rem;color:#e06060;letter-spacing:0.2em;}
+  .lucky-body{padding:16px;}
+  .lucky-grid{display:flex;gap:12px;justify-content:center;margin-bottom:12px;flex-wrap:wrap;}
+  .lucky-num{width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(181,41,42,0.35),rgba(181,41,42,0.1));border:1px solid rgba(181,41,42,0.45);display:flex;align-items:center;justify-content:center;font-family:'Ma Shan Zheng',cursive;font-size:1.5rem;color:#f08080;}
+  .lucky-hint{font-size:0.72rem;color:var(--smoke);text-align:center;line-height:1.8;}
+  .loading-area{margin:0 18px;text-align:center;padding:30px;color:var(--smoke);font-size:0.8rem;display:none;}
+  .spinner{width:28px;height:28px;border:2px solid rgba(201,147,58,0.2);border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 10px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #result-area{display:none;}
+  .refresh-btn{display:block;margin:4px auto 0;background:transparent;border:1px solid rgba(201,147,58,0.3);border-radius:3px;color:var(--smoke);font-family:'Noto Serif TC',serif;font-size:0.72rem;letter-spacing:0.2em;padding:8px 24px;cursor:pointer;transition:all 0.3s;}
+  .refresh-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .footer{text-align:center;padding:24px 20px 0;color:rgba(122,106,85,0.5);font-size:0.62rem;line-height:2;}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="header-deco">✦ 每日命盤速覽 ✦</div>
+    <div class="title-main">紫微運勢</div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="input-section">
+    <div class="input-title">✦ 輸入生辰資料 ✦</div>
+    <div class="input-hint">請輸入國曆生日，系統自動換算農曆再起八字</div>
+    <div class="input-row-3">
+      <div class="input-group"><span class="input-label">出生年（國曆）</span><input class="input-field" type="number" id="birthYear" min="1920" max="2010" value="2001"></div>
+      <div class="input-group"><span class="input-label">出生月（國曆）</span><input class="input-field" type="number" id="birthMonth" min="1" max="12" value="7"></div>
+      <div class="input-group"><span class="input-label">出生日（國曆）</span><input class="input-field" type="number" id="birthDay" min="1" max="31" value="24"></div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <span class="input-label">出生時辰</span>
+        <select class="input-field" id="birthHour">
+          <option value="0">子時 (23-1點)</option><option value="1">丑時 (1-3點)</option>
+          <option value="2">寅時 (3-5點)</option><option value="3">卯時 (5-7點)</option>
+          <option value="4">辰時 (7-9點)</option><option value="5">巳時 (9-11點)</option>
+          <option value="6">午時 (11-13點)</option><option value="7">未時 (13-15點)</option>
+          <option value="8">申時 (15-17點)</option><option value="9">酉時 (17-19點)</option>
+          <option value="10">戌時 (19-21點)</option><option value="11" selected>亥時 (21-23點)</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <span class="input-label">性別</span>
+        <select class="input-field" id="gender"><option value="男">男</option><option value="女">女</option></select>
+      </div>
+    </div>
+    <button class="calc-btn" id="calcBtn" onclick="startCalculation()">✦ 起卦算命 ✦</button>
+  </div>
+
+  <div class="loading-area" id="loadingArea">
+    <div class="spinner"></div>
+    <div id="loadingStep">AI正在起卦…</div>
+  </div>
+
+  <div id="result-area">
+    <div class="date-bar">
+      <div class="date-solar" id="solarDate"></div>
+      <div class="date-right">
+        <div class="date-lunar" id="lunarDate"></div>
+        <div class="date-ganzhi" id="ganzhiDay"></div>
+      </div>
+    </div>
+    <div class="birth-info-bar" id="birthInfoBar"></div>
+    <div class="bazi-strip" id="baziStrip"></div>
+    <div id="cards-area"></div>
+    <div style="text-align:center;margin:0 18px 10px">
+      <button class="refresh-btn" onclick="startCalculation()">✦ 重新推算今日運勢 ✦</button>
+    </div>
+    <div style="text-align:center;margin:8px 18px 10px">
+      <button class="refresh-btn" onclick="resetForm()">更換命盤</button>
+    </div>
+    <p class="footer" id="footerText"></p>
+  </div>
+</div>
+
+<script>
+// ── 農曆 ──────────────────────────────────────────────────────────────────────
+const lunarInfo=[0x04bd8,0x04ae0,0x0a570,0x054d5,0x0d260,0x0d950,0x16554,0x056a0,0x09ad0,0x055d2,0x04ae0,0x0a5b6,0x0a4d0,0x0d250,0x1d255,0x0b540,0x0d6a0,0x0ada2,0x095b0,0x14977,0x04970,0x0a4b0,0x0b4b5,0x06a50,0x06d40,0x1ab54,0x02b60,0x09570,0x052f2,0x04970,0x06566,0x0d4a0,0x0ea50,0x06e95,0x05ad0,0x02b60,0x186e3,0x092e0,0x1c8d7,0x0c950,0x0d4a0,0x1d8a6,0x0b550,0x056a0,0x1a5b4,0x025d0,0x092d0,0x0d2b2,0x0a950,0x0b557,0x06ca0,0x0b550,0x15355,0x04da0,0x0a5d0,0x14573,0x052b0,0x0a9a8,0x0e950,0x06aa0,0x0aea6,0x0ab50,0x04b60,0x0aae4,0x0a570,0x05260,0x0f263,0x0d950,0x05b57,0x056a0,0x096d0,0x04dd5,0x04ad0,0x0a4d0,0x0d4d4,0x0d250,0x0d558,0x0b540,0x0b6a0,0x195a6,0x095b0,0x049b0,0x0a974,0x0a4b0,0x0b27a,0x06a50,0x06d40,0x0af46,0x0ab60,0x09570,0x04af5,0x04970,0x064b0,0x074a3,0x0ea50,0x06aa0,0x0a6b6,0x056a0,0x02b60,0x0aae5,0x092e0,0x0c960,0x0d954,0x0d4a0,0x0da50,0x07552,0x056a0,0x0abb7,0x025d0,0x092d0,0x0cab5,0x0a950,0x0b4a0,0x0baa4,0x0ad50,0x055d9,0x04ba0,0x0a5b0,0x15176,0x052b0,0x0f930,0x06aa6,0x0ad50,0x056d0,0x04ae4,0x0a570,0x05260,0x0eae3,0x0d950,0x0db47,0x066a0,0x096d0,0x04afb,0x04ad0,0x0a4d0,0x0d0b6,0x0d25f,0x0d520,0x0daa0,0x16aa6,0x056d0,0x04ae0,0x0a9d4,0x0a2d0,0x0d150,0x0f252,0x0d520];
+const LM=['正','二','三','四','五','六','七','八','九','十','冬','臘'];
+const LD=['初一','初二','初三','初四','初五','初六','初七','初八','初九','初十','十一','十二','十三','十四','十五','十六','十七','十八','十九','二十','廿一','廿二','廿三','廿四','廿五','廿六','廿七','廿八','廿九','三十'];
+const GAN=['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+const ZHI=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+const ELEM=['木','木','火','火','土','土','金','金','水','水'];
+const BELEM=['水','土','木','木','土','火','火','土','金','金','土','水'];
+const ZODIAC=['鼠','牛','虎','兔','龍','蛇','馬','羊','猴','雞','狗','豬'];
+
+function leapMonth(y){return lunarInfo[y-1900]&0xf;}
+function leapDays(y){if(leapMonth(y))return(lunarInfo[y-1900]&0x10000)?30:29;return 0;}
+function monthDays(y,m){return(lunarInfo[y-1900]&(0x10000>>m))?30:29;}
+function lYearDays(y){let s=348;for(let i=0x8000;i>0x8;i>>=1)s+=((lunarInfo[y-1900]&i)?1:0);return s+leapDays(y);}
+function solarToLunar(sy,sm,sd){
+  let offset=Math.round((Date.UTC(sy,sm-1,sd)-Date.UTC(1900,0,31))/86400000);
+  let i,temp=0,ly;
+  for(i=1900;i<2101&&offset>0;i++){temp=lYearDays(i);offset-=temp;}
+  if(offset<0){offset+=temp;i--;}
+  ly=i;
+  let leap=leapMonth(ly),isLeap=false,lm,ld;
+  for(i=1;i<13&&offset>0;i++){
+    if(leap>0&&i==leap+1&&!isLeap){--i;isLeap=true;temp=leapDays(ly);}
+    else temp=monthDays(ly,i);
+    if(isLeap&&i==leap+1)isLeap=false;
+    offset-=temp;
+  }
+  if(offset==0&&leap>0&&i==leap+1){if(isLeap)isLeap=false;else{isLeap=true;--i;}}
+  if(offset<0){offset+=temp;--i;}
+  return{year:ly,month:i,day:offset+1,isLeap};
+}
+
+// ── 八字 ──────────────────────────────────────────────────────────────────────
+const JIE=[6,4,6,5,6,6,7,7,8,8,7,7];
+function getYearPillar(sy,sm,sd){
+  let y=sy;if(sm<2||(sm===2&&sd<JIE[1]))y--;
+  return{gan:GAN[((y-4)%10+10)%10],zhi:ZHI[((y-4)%12+12)%12],gi:((y-4)%10+10)%10,zi:((y-4)%12+12)%12};
+}
+function getMonthPillar(sy,sm,sd,ygi){
+  let mIdx=sm-1;if(sd<JIE[mIdx])mIdx=(mIdx-1+12)%12;
+  const zi=[1,2,3,4,5,6,7,8,9,10,11,0][mIdx];
+  const gi=([2,4,6,8,0,2,4,6,8,0][ygi%10]+(mIdx-1+12)%12)%10;
+  return{gan:GAN[gi],zhi:ZHI[zi],gi,zi};
+}
+function getDayPillar(sy,sm,sd){
+  const diff=Math.round((new Date(Date.UTC(sy,sm-1,sd))-new Date(Date.UTC(1900,0,1)))/86400000);
+  return{gan:GAN[((diff)%10+10)%10],zhi:ZHI[((10+diff)%12+12)%12],gi:((diff)%10+10)%10,zi:((10+diff)%12+12)%12};
+}
+function getHourPillar(dgi,hi){
+  const gi=([0,2,4,6,8,0,2,4,6,8][dgi%10]+hi)%10;
+  return{gan:GAN[gi],zhi:ZHI[hi],gi,zi:hi};
+}
+function calcBazi(sy,sm,sd,hi){
+  const year=getYearPillar(sy,sm,sd);
+  const day=getDayPillar(sy,sm,sd);
+  return{year,month:getMonthPillar(sy,sm,sd,year.gi),day,hour:getHourPillar(day.gi,hi)};
+}
+
+// ── 分數 ──────────────────────────────────────────────────────────────────────
+const likeOf={木:['水','木'],火:['木','火'],土:['火','土'],金:['土','金'],水:['金','水']};
+const dislikeOf={木:['金'],火:['水'],土:['木'],金:['火'],水:['土']};
+const wealthOf={木:'土',火:'金',土:'水',金:'木',水:'火'};
+function calcScore(dme,tdp){
+  const se=ELEM[tdp.gi],be=BELEM[tdp.zi];let s=52;
+  [se,be].forEach(e=>{
+    if((likeOf[dme]||[]).includes(e))s+=15;
+    else if(e===wealthOf[dme])s+=10;
+    else if((dislikeOf[dme]||[]).includes(e))s-=14;
+    else s+=5;
+  });
+  const n=new Date(),seed=n.getFullYear()*10000+(n.getMonth()+1)*100+n.getDate();
+  return Math.min(97,Math.max(30,s+(seed%11)-5));
+}
+function getLuckyNums(tdp,bd){
+  const n=new Date(),seed=bd+(n.getMonth()+1)*31+n.getFullYear(),set=new Set();
+  set.add(((tdp.gi*7+tdp.zi*3+4)%49)+1);
+  set.add(((tdp.zi*11+tdp.gi*5+9)%49)+1);
+  set.add(((seed%37)+6));
+  while(set.size<4)set.add(((seed+set.size*13)%49)+1);
+  return[...set].slice(0,4).sort((a,b)=>a-b);
+}
+function stars(n){return Array.from({length:5},(_,i)=>`<span class="${i<n?'s-on':'s-off'}">★</span>`).join('');}
+
+// ── AI 呼叫（透過 claude.ai artifact proxy，無 CORS 問題）─────────────────────
+async function callClaude(prompt){
+  const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({
+      model:'claude-haiku-4-5-20251001',
+      max_tokens:400,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!resp.ok){
+    const t=await resp.text();
+    throw new Error(`${resp.status}: ${t.slice(0,80)}`);
+  }
+  const d=await resp.json();
+  return d.content.map(c=>c.text||'').join('').trim();
+}
+
+// ── 主流程 ────────────────────────────────────────────────────────────────────
+async function startCalculation(){
+  const by=parseInt(document.getElementById('birthYear').value);
+  const bm=parseInt(document.getElementById('birthMonth').value);
+  const bd=parseInt(document.getElementById('birthDay').value);
+  const bh=parseInt(document.getElementById('birthHour').value);
+  const gender=document.getElementById('gender').value;
+  if(!by||!bm||!bd||by<1920||by>2010||bm<1||bm>12||bd<1||bd>31){alert('請輸入正確的生辰資料！');return;}
+
+  document.getElementById('calcBtn').disabled=true;
+  document.getElementById('loadingArea').style.display='block';
+  document.getElementById('result-area').style.display='none';
+  const setStep=t=>document.getElementById('loadingStep').textContent=t;
+
+  const now=new Date(),sy=now.getFullYear(),sm=now.getMonth()+1,sd=now.getDate();
+  const todayLunar=solarToLunar(sy,sm,sd);
+  const todayDay=getDayPillar(sy,sm,sd);
+  const todayYear=getYearPillar(sy,sm,sd);
+  const bl=solarToLunar(by,bm,bd);
+  const bazi=calcBazi(by,bm,bd,bh);
+  const dme=ELEM[bazi.day.gi];
+  const total=calcScore(dme,todayDay);
+  const scoreLabel=total>=80?'大吉':total>=65?'吉':total>=50?'平':total>=38?'小凶':'凶';
+  const luckyNums=getLuckyNums(todayDay,bd);
+  const ws=Math.min(5,Math.max(1,Math.round(total/20)));
+
+  document.getElementById('solarDate').textContent=`今日 ${sy}年${sm}月${sd}日`;
+  document.getElementById('lunarDate').textContent=`農曆 ${todayLunar.year}年${todayLunar.isLeap?'閏':''}${LM[todayLunar.month-1]}月${LD[todayLunar.day-1]}`;
+  document.getElementById('ganzhiDay').textContent=`${todayYear.gan}${todayYear.zhi}年 · 今日干支：${todayDay.gan}${todayDay.zhi}`;
+  document.getElementById('birthInfoBar').innerHTML=`國曆生日：<span>${by}年${bm}月${bd}日</span> → 農曆：<span>${bl.year}年${bl.isLeap?'閏':''}${LM[bl.month-1]}月${LD[bl.day-1]}</span><br>日主：<span>${bazi.day.gan}（${dme}）</span>　屬相：<span>${ZODIAC[bazi.year.zi]}</span>`;
+  document.getElementById('baziStrip').innerHTML=`
+    <div class="bazi-pill"><span class="bazi-label">年柱</span><span class="bazi-chars">${bazi.year.gan}${bazi.year.zhi}</span></div>
+    <div class="bazi-pill"><span class="bazi-label">月柱</span><span class="bazi-chars">${bazi.month.gan}${bazi.month.zhi}</span></div>
+    <div class="bazi-pill"><span class="bazi-label">日柱</span><span class="bazi-chars">${bazi.day.gan}${bazi.day.zhi}</span></div>
+    <div class="bazi-pill bazi-today"><span class="bazi-label">時柱</span><span class="bazi-chars">${bazi.hour.gan}${bazi.hour.zhi}</span></div>`;
+
+  const area=document.getElementById('cards-area');
+  area.innerHTML=`
+  <div class="overall-bar">
+    <span class="overall-label">今日總運</span>
+    <div class="meter"><div class="meter-fill" id="mfill" style="width:0%"></div></div>
+    <span class="overall-score">${scoreLabel}&nbsp;${total}</span>
+  </div>
+  ${[['🌟','整體運勢',0],['💰','財運',0],['📋','事業',-1],['🌸','感情',0],['🌿','健康',0]].map(([icon,title,adj],i)=>`
+  <div class="card" style="animation-delay:${i*0.08}s">
+    <div class="card-head"><span class="card-icon">${icon}</span><span class="card-title">${title}</span><span class="stars">${stars(Math.min(5,Math.max(1,ws+adj)))}</span></div>
+    <div class="card-body"><p class="fortune-text" id="text-${i}">推算中…</p></div>
+  </div>`).join('')}
+  <div class="lucky-card">
+    <div class="lucky-head"><span class="card-icon">🎲</span><span class="lucky-title">偏財號碼 · 今日速覽</span></div>
+    <div class="lucky-body">
+      <div class="lucky-grid">${luckyNums.map(n=>`<div class="lucky-num">${n}</div>`).join('')}</div>
+      <p class="lucky-hint" id="luckyHint">推算中…</p>
+    </div>
+  </div>`;
+
+  document.getElementById('loadingArea').style.display='none';
+  document.getElementById('result-area').style.display='block';
+  setTimeout(()=>{const mf=document.getElementById('mfill');if(mf)mf.style.width=total+'%';},150);
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  // 一次送出所有內容，讓 AI 統一生成
+  const baseInfo=`你是精通八字命理的大師，用繁體中文回覆。
+命盤：${gender}，${by}年${bm}月${bd}日（農曆${LM[bl.month-1]}月${LD[bl.day-1]}），屬${ZODIAC[bazi.year.zi]}
+八字：年${bazi.year.gan}${bazi.year.zhi} 月${bazi.month.gan}${bazi.month.zhi} 日${bazi.day.gan}${bazi.day.zhi} 時${bazi.hour.gan}${bazi.hour.zhi}
+日主：${bazi.day.gan}（${dme}）
+今日：${sy}年${sm}月${sd}日，干支${todayDay.gan}${todayDay.zhi}，農曆${LM[todayLunar.month-1]}月${LD[todayLunar.day-1]}
+今日運勢指數：${total}/100（${scoreLabel}）
+
+請針對今日八字流日，分別寫出以下五段運勢，每段用【】標記，各約60字，語氣生動有命理感：
+【整體】
+【財運】
+【事業】
+【感情】
+【健康】
+最後加一行：【偏財】今日偏財運勢說明，30字內。`;
+
+  try{
+    setStep('AI起卦中，請稍候…');
+    const result=await callClaude(baseInfo);
+
+    // 解析各段
+    const parse=(tag)=>{
+      const m=result.match(new RegExp(`【${tag}】([\\s\\S]*?)(?=【|$)`));
+      return m?m[1].trim():'';
+    };
+
+    const sections=['整體','財運','事業','感情','健康'];
+    sections.forEach((tag,i)=>{
+      const txt=parse(tag);
+      document.getElementById(`text-${i}`).textContent=txt||'今日運勢平穩，宜謹慎行事。';
+    });
+    const luckyTxt=parse('偏財');
+    document.getElementById('luckyHint').innerHTML=(luckyTxt||'今日可留意偏財機會，量力而為。')+'<br><br>號碼僅供參考，切勿過度沉迷投機博彩。';
+
+  }catch(e){
+    // 若 AI 失敗，顯示錯誤訊息
+    ['整體','財運','事業','感情','健康'].forEach((_,i)=>{
+      document.getElementById(`text-${i}`).textContent=`連線失敗（${e.message}），請重試。`;
+    });
+  }
+
+  document.getElementById('footerText').textContent=`命盤：${by}年${bm}月${bd}日 ${ZHI[bh]}時生 · 日主${bazi.day.gan}（${dme}）\n本工具僅供參考娛樂，不構成任何建議`;
+  document.getElementById('calcBtn').disabled=false;
+}
+
+function resetForm(){
+  document.getElementById('result-area').style.display='none';
+  document.getElementById('cards-area').innerHTML='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
